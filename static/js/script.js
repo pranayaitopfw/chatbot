@@ -8,15 +8,25 @@ async function sendMessage() {
 
     if (!message) return;
 
-    chatBox.innerHTML += `
-        <div class="user-message">
-            👤 ${message}
-        </div>
-    `;
+    // User Message
+    const userDiv = document.createElement("div");
+    userDiv.className = "user-message";
+    userDiv.textContent = "👤 " + message;
+
+    chatBox.appendChild(userDiv);
 
     chatBox.scrollTop = chatBox.scrollHeight;
 
     messageInput.value = "";
+
+    // Typing Message
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "ai-message";
+    typingDiv.innerHTML = "🤖 <i>Typing...</i>";
+
+    chatBox.appendChild(typingDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
 
@@ -32,21 +42,38 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        chatBox.innerHTML += `
-            <div class="ai-message">
-                🤖 ${data.reply}
+        // Remove Typing...
+        typingDiv.remove();
+
+        // AI Message
+        const aiDiv = document.createElement("div");
+        aiDiv.className = "ai-message";
+
+        aiDiv.innerHTML = `
+            <div class="bot-icon">🤖</div>
+            <div class="bot-text">
+                ${marked.parse(data.reply)}
             </div>
         `;
+
+        chatBox.appendChild(aiDiv);
+
+        // Highlight all code blocks
+        document.querySelectorAll("pre code").forEach((el) => {
+            hljs.highlightElement(el);
+        });
 
         chatBox.scrollTop = chatBox.scrollHeight;
 
     } catch (error) {
 
-        chatBox.innerHTML += `
-            <div class="ai-message">
-                ❌ Server Error
-            </div>
-        `;
+        typingDiv.remove();
+
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "ai-message";
+        errorDiv.innerHTML = "❌ Server Error";
+
+        chatBox.appendChild(errorDiv);
 
     }
 
